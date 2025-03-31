@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,43 +7,50 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using System.Windows;
 
-namespace ConsoleApp8
+namespace ConsoleApp7
 {
-    public class severconnection
+    public class ServerConnection
     {
-        HttpClient client = new HttpClient();
-        string serverurl = "";
-        public severconnection(string severurl) {
-            this.serverurl = serverurl;
+        public HttpClient client = new HttpClient();
+        public string serverUrl = "";
+        public ServerConnection(string serverUrl)
+        {
+            this.serverUrl = serverUrl;
         }
-        List<kolbasz> kolbaszlist = new List<kolbasz>();
 
+        public async Task<List<kolbasz>> AllKolbi()
+        {
+            List<kolbasz> allkolbi = new List<kolbasz>();
 
-        public async Task<List<kolbasz>>allkolbasz() {
-            List<kolbasz> allkolbaszok = new List<kolbasz>();
-            string url = serverurl + "/kolbaszok";
+            string url = serverUrl + "/kolbaszok";
             try
             {
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
                 string result = await response.Content.ReadAsStringAsync();
-                allkolbaszok = JsonConvert.DeserializeObject<List<kolbasz>>(result).ToList();
+                allkolbi = JsonConvert.DeserializeObject<List<kolbasz>>(result).ToList();
+
             }
             catch (Exception e)
             {
-
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
-            return allkolbaszok;
-        }
 
-        public async Task<bool> createkolbasz(string name, float rew, int price) {
-            string url = serverurl + "/createkolobasz";
+            return allkolbi;
+        }
+        public async Task<bool> createKolbi(string name, float ertekeles, int ar)
+        {
+            string url = serverUrl + "/createKolbasz";
             try
             {
-                var jsoninfo = new { kolbaszname = name, kolbaszertekeles = rew, kolbaszara = price };
-                string jsonstringifed = JsonConvert.SerializeObject(jsoninfo);
-                HttpContent sendthis = new StringContent(jsonstringifed, Encoding.UTF8, "Application/Json");
+                var jsonInfo = new
+                {
+                    kolbaszNeve = name,
+                    kolbaszErtekelese = ertekeles,
+                    kolbaszAra = ar
+                };
+                string jsonstring = JsonConvert.SerializeObject(jsonInfo);
+                HttpContent sendthis = new StringContent(jsonstring, Encoding.UTF8, "Application/json");
                 HttpResponseMessage response = await client.PostAsync(url, sendthis);
                 response.EnsureSuccessStatusCode();
                 string result = await response.Content.ReadAsStringAsync();
@@ -52,8 +59,28 @@ namespace ConsoleApp8
             }
             catch (Exception e)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Message);
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            return false;
+        }
+        public async Task<bool> deleteKolbi(int id)
+        {
+            string url = serverUrl + "/deleteKolbasz/" + id;
+            try
+            {
+                HttpResponseMessage response = await client.DeleteAsync(url);
+                response.EnsureSuccessStatusCode();
+                string result = await response.Content.ReadAsStringAsync();
 
-                Console.WriteLine(e);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Message);
+                Console.ForegroundColor = ConsoleColor.White;
             }
             return false;
         }
